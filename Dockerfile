@@ -13,7 +13,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Claude Code as the bun user
+# Directories that bun needs to access
+RUN mkdir -p \
+    /workspace \
+    /home/bun/.claude \
+    && chown -R bun:bun \
+    /workspace \
+    /home/bun/.claude
+
+# Install Claude Code as bun user
 USER bun
 
 ENV HOME=/home/bun
@@ -28,10 +36,6 @@ COPY --chown=bun:bun package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 COPY --chown=bun:bun . .
-
-RUN mkdir -p \
-    /home/bun/.claude \
-    /workspace
 
 WORKDIR /app
 
