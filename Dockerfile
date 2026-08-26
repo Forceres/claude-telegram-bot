@@ -1,5 +1,7 @@
 FROM oven/bun:1-debian
 
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -11,31 +13,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Claude Code
+# Install Claude Code as the bun user
+USER bun
+
+ENV HOME=/home/bun
+ENV PATH="/home/bun/.local/bin:${PATH}"
+
 RUN curl -fsSL https://claude.ai/install.sh | bash
-
-# Create non-root user
-RUN useradd \
-    --create-home \
-    --shell /bin/bash \
-    --uid 1000 \
-    claude
-
-ENV HOME=/home/claude
-ENV PATH="/home/claude/.local/bin:/root/.local/bin:${PATH}"
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY --chown=bun:bun package.json bun.lock ./
 
 RUN bun install --frozen-lockfile
 
-COPY . .
+COPY --chown=bun:bun . .
 
-RUN mkdir -p /workspace /home/claude/.claude \
-    && chown -R claude:claude /app /workspace /home/claude
-
-USER claude
+RUN mkdir -p \
+    /home/bun/.claude \
+    /workspace
 
 WORKDIR /app
 
