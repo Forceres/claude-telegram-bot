@@ -24,6 +24,7 @@ COPY . .
 
 RUN mkdir -p /workspace /root/.claude
 
-WORKDIR /workspace
+ENV CLAUDE_WORKING_DIR=/workspace \
+    ALLOWED_PATHS=/workspace
 
-CMD ["bun", "run", "src/index.ts"]
+CMD ["bun", "run", "start"]
